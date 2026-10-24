@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import csv
 import io
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
 from .dsl import Filter, Mapping, Rule, Source, parse_mapping
-from .errors import DatamoldError, MappingSyntaxError, RowError
+from .errors import DatamoldError, RowError
 from .funcs import FUNCTIONS
 
 ON_ERROR_MODES = ("fail", "skip", "null")
@@ -192,16 +193,13 @@ def infer_mapping(csv_text: str, delimiter: str | None = None) -> str:
         cells = [r[name].strip() for r in rows if r[name].strip() != ""]
         kind = _guess_type(cells)
         target = _target_name(name)
-        source = name if name.isidentifier() or " " not in name else name
         suffix = f": {kind}" if kind != "str" else ""
         trim = " | trim" if kind == "str" else ""
-        lines.append(f"{target}{suffix} <- {source}{trim}")
+        lines.append(f"{target}{suffix} <- {name}{trim}")
     return "\n".join(lines) + "\n"
 
 
 def _target_name(column: str) -> str:
-    import re
-
     name = re.sub(r"\W+", "_", column.strip()).strip("_").lower() or "field"
     return "f_" + name if name[0].isdigit() else name
 
@@ -227,10 +225,7 @@ def _guess_type(cells: list[str]) -> str:
 
 def validate_mapping(text: str, header: list[str] | None = None) -> Mapping:
     """Parse a mapping and optionally check its columns exist in ``header``."""
-    try:
-        mapping = parse_mapping(text)
-    except MappingSyntaxError:
-        raise
+    mapping = parse_mapping(text)
     if header is not None:
         check_columns(mapping, header)
     return mapping
