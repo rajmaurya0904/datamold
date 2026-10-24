@@ -6,6 +6,7 @@ new value. ``None`` stands for an empty CSV cell and passes through most functio
 
 from __future__ import annotations
 
+import functools
 import re
 from collections.abc import Callable
 from datetime import datetime
@@ -19,18 +20,34 @@ def _text(value: Any) -> str:
     return value if isinstance(value, str) else str(value)
 
 
+def _elementwise(fn: Callable[..., Any]) -> Callable[..., Any]:
+    """Make a string function apply to each item when given a list (multi-source rules)."""
+
+    @functools.wraps(fn)
+    def wrapper(value: Any, *args: str) -> Any:
+        if isinstance(value, list):
+            return [fn(v, *args) for v in value]
+        return fn(value, *args)
+
+    return wrapper
+
+
+@_elementwise
 def f_trim(value: Any) -> Any:
     return value.strip() if isinstance(value, str) else value
 
 
+@_elementwise
 def f_lower(value: Any) -> Any:
     return value.lower() if isinstance(value, str) else value
 
 
+@_elementwise
 def f_upper(value: Any) -> Any:
     return value.upper() if isinstance(value, str) else value
 
 
+@_elementwise
 def f_title(value: Any) -> Any:
     return value.title() if isinstance(value, str) else value
 
@@ -101,10 +118,12 @@ def f_default(value: Any, fallback: str = "") -> Any:
     return fallback if value is None or value == "" else value
 
 
+@_elementwise
 def f_replace(value: Any, old: str, new: str = "") -> Any:
     return value.replace(old, new) if isinstance(value, str) else value
 
 
+@_elementwise
 def f_regex(value: Any, pattern: str, repl: str = "") -> Any:
     if not isinstance(value, str):
         return value

@@ -233,3 +233,11 @@ def parse_mapping(text: str) -> Mapping:
     if not mapping.rules and not mapping.passthrough:
         raise MappingSyntaxError("mapping has no rules")
     return mapping
+
+
+MAPPING_HELP = (
+    "One rule per line: 'target[: type] <- source[, source] [| func(args) ...]'. "
+    "Sources are column names, \"quoted literals\" or $row. Targets may nest (a.b) or end in [] "
+    "for a list. Directives: '@filter <col> <op> <value>' and '@passthrough'. "
+    "Types: int, float, bool, str. Lines starting with # are comments."
+)
