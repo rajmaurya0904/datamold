@@ -6,7 +6,7 @@ import inspect
 from typing import Any
 
 from .dsl import parse_mapping
-from .engine import ON_ERROR_MODES, infer_mapping, read_csv, transform
+from .engine import ON_ERROR_MODES, check_columns, infer_mapping, read_csv, transform
 from .errors import DatamoldError
 from .funcs import FUNCTIONS
 
@@ -56,8 +56,6 @@ def validate(args: dict[str, Any]) -> dict[str, Any]:
         "columns_used": sorted(mapping.columns_used()),
     }
     if args.get("csv"):
-        from .engine import check_columns
-
         header, _ = read_csv(args["csv"], _delimiter(args))
         check_columns(mapping, header)
         out["csv_columns"] = header

@@ -173,3 +173,12 @@ def test_api_limit_validation(bad) -> None:
 
     with pytest.raises(DatamoldError):
         api.convert({"csv": CSV, "mapping": MAP, "limit": bad})
+
+
+def test_cli_limit(tmp_path, capsys) -> None:
+    (tmp_path / "in.csv").write_text(CSV, encoding="utf-8")
+    (tmp_path / "m.dm").write_text(MAP, encoding="utf-8")
+    args = ["convert", str(tmp_path / "in.csv"), "-m", str(tmp_path / "m.dm"), "--ndjson"]
+    assert cli.main([*args, "--limit", "1"]) == 0
+    assert len(capsys.readouterr().out.strip().splitlines()) == 1
+    assert cli.main([*args, "--limit", "-2"]) == 2

@@ -52,6 +52,7 @@ def build_parser() -> argparse.ArgumentParser:
     conv.add_argument("--indent", type=int, default=2, help="JSON indent (0 = compact)")
     conv.add_argument("--on-error", choices=ON_ERROR_MODES, default="fail")
     conv.add_argument("--delimiter", help="CSV delimiter (default: sniffed)")
+    conv.add_argument("--limit", type=int, help="only emit the first N records")
 
     chk = sub.add_parser("check", help="validate a mapping, optionally against a CSV header")
     chk.add_argument("mapping", help="mapping file")
@@ -72,6 +73,10 @@ def _cmd_convert(args: argparse.Namespace) -> int:
     result = transform(
         _read(args.csv), mapping, on_error=args.on_error, delimiter=_delimiter(args.delimiter)
     )
+    if args.limit is not None:
+        if args.limit < 0:
+            raise DatamoldError("--limit must be zero or more")
+        result.records = result.records[: args.limit]
     if args.ndjson:
         text = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in result.records)
     else:
