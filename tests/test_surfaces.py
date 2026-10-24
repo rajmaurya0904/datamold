@@ -182,3 +182,11 @@ def test_cli_limit(tmp_path, capsys) -> None:
     assert cli.main([*args, "--limit", "1"]) == 0
     assert len(capsys.readouterr().out.strip().splitlines()) == 1
     assert cli.main([*args, "--limit", "-2"]) == 2
+
+
+def test_cli_columns_option(tmp_path, capsys) -> None:
+    (tmp_path / "in.csv").write_text("1,ann\n", encoding="utf-8")
+    (tmp_path / "m.dm").write_text("n: int <- a\nw <- b", encoding="utf-8")
+    args = ["convert", str(tmp_path / "in.csv"), "-m", str(tmp_path / "m.dm"), "--ndjson"]
+    assert cli.main([*args, "--columns", "a, b"]) == 0
+    assert json.loads(capsys.readouterr().out) == {"n": 1, "w": "ann"}

@@ -41,7 +41,7 @@ pip install -e .
 ## Usage
 
 ```bash
-datamold convert data.csv -m rules.dm -o out.json   # CSV + mapping -> JSON (--ndjson, --limit, --on-error skip|null)
+datamold convert data.csv -m rules.dm -o out.json   # CSV + mapping -> JSON (--ndjson, --limit, --on-error skip|null, --columns a,b for header-less files)
 datamold infer data.csv > rules.dm                   # draft a mapping with guessed types
 datamold check rules.dm --csv data.csv               # validate the mapping and its column names
 datamold serve                                       # MCP server on stdio
@@ -54,7 +54,7 @@ datamold serve                                       # MCP server on stdio
 - Sources are column names, `"quoted literals"`, or `$row` (1-based data row number). Several sources become a list that `join` can combine.
 - Targets nest with dots (`address.city`) and end in `[]` to force a list.
 - Types are `int`, `float`, `bool`, `str`. Empty cells become `null`.
-- `@filter <column> <op> <value>` drops rows (`==`, `!=`, `>`, `<`, `>=`, `<=`, `contains`, `empty`, `notempty`). `@passthrough` keeps unmapped columns as-is.
+- `@filter <column> <op> <value>` drops rows (`==`, `!=`, `>`, `<`, `>=`, `<=`, `contains`, `empty`, `notempty`). `@distinct <column>` keeps the first row per value. `@passthrough` keeps unmapped columns as-is.
 - `datamold functions` lists the pipe functions: `trim lower upper title split join default replace regex map date round required nullif` plus the type converters.
 
 **MCP server.** Register `datamold serve` as a stdio server in your MCP client. It exposes `convert_csv`, `validate_mapping`, `infer_mapping` and `list_functions`.

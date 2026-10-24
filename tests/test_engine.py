@@ -122,3 +122,9 @@ def test_distinct_column_must_exist_and_needs_a_name() -> None:
         transform("a\n1\n", "@distinct nope\nx <- a")
     with pytest.raises(MappingSyntaxError):
         transform("a\n1\n", "@distinct\nx <- a")
+
+
+def test_headerless_csv_with_explicit_columns() -> None:
+    res = transform("1,ann\n2,bob\n", "id: int <- id\nname <- name", columns=["id", "name"])
+    assert res.records == [{"id": 1, "name": "ann"}, {"id": 2, "name": "bob"}]
+    assert res.rows_read == 2

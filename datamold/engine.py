@@ -31,7 +31,9 @@ class Result:
         }
 
 
-def read_csv(text: str, delimiter: str | None = None) -> tuple[list[str], list[dict[str, str]]]:
+def read_csv(
+    text: str, delimiter: str | None = None, columns: list[str] | None = None
+) -> tuple[list[str], list[dict[str, str]]]:
     """Parse CSV text into (header, rows). The delimiter is sniffed when not given."""
     if text.startswith("﻿"):
         text = text[1:]
@@ -40,10 +42,13 @@ def read_csv(text: str, delimiter: str | None = None) -> tuple[list[str], list[d
     if delimiter is None:
         delimiter = _sniff(text)
     reader = csv.reader(io.StringIO(text, newline=""), delimiter=delimiter)
-    try:
-        header = [h.strip() for h in next(reader)]
-    except StopIteration:
-        raise DatamoldError("CSV input has no header row") from None
+    if columns is not None:
+        header = list(columns)
+    else:
+        try:
+            header = [h.strip() for h in next(reader)]
+        except StopIteration:
+            raise DatamoldError("CSV input has no header row") from None
     if len(set(header)) != len(header):
         dupes = sorted({h for h in header if header.count(h) > 1})
         raise DatamoldError(f"CSV header has duplicate column names: {', '.join(dupes)}")
@@ -144,6 +149,7 @@ def transform(
     *,
     on_error: str = "fail",
     delimiter: str | None = None,
+    columns: list[str] | None = None,
 ) -> Result:
     """Convert ``csv_text`` using ``mapping``.
 
@@ -155,7 +161,7 @@ def transform(
         raise DatamoldError(f"on_error must be one of {', '.join(ON_ERROR_MODES)}")
     if isinstance(mapping, str):
         mapping = parse_mapping(mapping)
-    header, rows = read_csv(csv_text, delimiter)
+    header, rows = read_csv(csv_text, delimiter, columns)
     check_columns(mapping, header)
     result = Result(rows_read=len(rows))
     seen: set[str] = set()

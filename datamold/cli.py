@@ -52,6 +52,9 @@ def build_parser() -> argparse.ArgumentParser:
     conv.add_argument("--indent", type=int, default=2, help="JSON indent (0 = compact)")
     conv.add_argument("--on-error", choices=ON_ERROR_MODES, default="fail")
     conv.add_argument("--delimiter", help="CSV delimiter (default: sniffed)")
+    conv.add_argument(
+        "--columns", help="comma-separated column names for a CSV that has no header row"
+    )
     conv.add_argument("--limit", type=int, help="only emit the first N records")
 
     chk = sub.add_parser("check", help="validate a mapping, optionally against a CSV header")
@@ -71,7 +74,11 @@ def build_parser() -> argparse.ArgumentParser:
 def _cmd_convert(args: argparse.Namespace) -> int:
     mapping = parse_mapping(_read(args.mapping))
     result = transform(
-        _read(args.csv), mapping, on_error=args.on_error, delimiter=_delimiter(args.delimiter)
+        _read(args.csv),
+        mapping,
+        on_error=args.on_error,
+        delimiter=_delimiter(args.delimiter),
+        columns=[c.strip() for c in args.columns.split(",")] if args.columns else None,
     )
     if args.limit is not None:
         if args.limit < 0:
