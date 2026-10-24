@@ -106,3 +106,19 @@ def test_infer_mapping_guesses_types_and_round_trips() -> None:
     assert "note <- Note | trim" in text
     res = transform("Id,Price,Active,Note\n1,2.5,true,hi\n", text)
     assert res.records == [{"id": 1, "price": 2.5, "active": True, "note": "hi"}]
+
+
+def test_distinct_keeps_first_row_per_key() -> None:
+    text = "k,v\na,1\nb,2\na,3\n"
+    res = transform(text, "@distinct k\nv <- v")
+    assert [r["v"] for r in res.records] == ["1", "2"]
+    assert res.rows_filtered == 1
+
+
+def test_distinct_column_must_exist_and_needs_a_name() -> None:
+    from datamold.errors import MappingSyntaxError
+
+    with pytest.raises(DatamoldError, match="nope"):
+        transform("a\n1\n", "@distinct nope\nx <- a")
+    with pytest.raises(MappingSyntaxError):
+        transform("a\n1\n", "@distinct\nx <- a")

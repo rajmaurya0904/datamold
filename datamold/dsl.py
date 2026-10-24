@@ -64,10 +64,13 @@ class Mapping:
     rules: list[Rule] = field(default_factory=list)
     filters: list[Filter] = field(default_factory=list)
     passthrough: bool = False
+    distinct: str | None = None
 
     def columns_used(self) -> set[str]:
         used = {s.value for r in self.rules for s in r.sources if s.kind == "column"}
         used.update(f.column for f in self.filters)
+        if self.distinct:
+            used.add(self.distinct)
         return used
 
 
@@ -188,6 +191,10 @@ def parse_mapping(text: str) -> Mapping:
             word, _, rest = stripped.partition(" ")
             if word == "@filter":
                 mapping.filters.append(_parse_filter(rest, number))
+            elif word == "@distinct":
+                if not rest.strip():
+                    raise MappingSyntaxError("@distinct needs a column name", number)
+                mapping.distinct = _unquote(rest.strip(), number)
             elif word == "@passthrough":
                 mapping.passthrough = True
             else:

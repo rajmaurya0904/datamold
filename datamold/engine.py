@@ -158,11 +158,18 @@ def transform(
     header, rows = read_csv(csv_text, delimiter)
     check_columns(mapping, header)
     result = Result(rows_read=len(rows))
+    seen: set[str] = set()
     for row in rows:
         number = int(row["$row"])
         if not _passes(row, mapping.filters):
             result.rows_filtered += 1
             continue
+        if mapping.distinct:
+            key = row[mapping.distinct].strip()
+            if key in seen:
+                result.rows_filtered += 1
+                continue
+            seen.add(key)
         record: dict[str, Any] = {}
         if mapping.passthrough:
             mapped = {s.value for r in mapping.rules for s in r.sources if s.kind == "column"}
