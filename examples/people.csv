@@ -1,0 +1,4 @@
+user_id,first_name,last_name,Email,city,status,tags,signup,spend
+1, ada ,lovelace,ADA@Example.com,London,active,math;code,1815-12-10,"1,200.50"
+2,alan,turing,alan@example.com,Wilmslow,inactive,code,1912-06-23,
+3,grace,hopper,grace@example.com,NYC,active,,1906-12-09,99
