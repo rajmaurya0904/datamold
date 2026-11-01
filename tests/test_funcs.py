@@ -75,3 +75,13 @@ def test_required_and_nullif_and_round() -> None:
         call("required", None)
     assert call("nullif", "N/A", "N/A") is None
     assert call("round", "2.567", "1") == 2.6
+
+
+def test_round_and_float_roundtrip() -> None:
+    assert call("round", 3.14159, "2") == 3.14
+    assert call("float", "1,200.5") == 1200.5
+
+
+def test_replace_and_nullif() -> None:
+    assert call("replace", "a-b-c", "-", "+") == "a+b+c"
+    assert call("nullif", "n/a", "n/a") is None
