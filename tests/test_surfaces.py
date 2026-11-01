@@ -190,3 +190,20 @@ def test_cli_columns_option(tmp_path, capsys) -> None:
     args = ["convert", str(tmp_path / "in.csv"), "-m", str(tmp_path / "m.dm"), "--ndjson"]
     assert cli.main([*args, "--columns", "a, b"]) == 0
     assert json.loads(capsys.readouterr().out) == {"n": 1, "w": "ann"}
+
+
+def test_functions_command_lists_trim(capsys) -> None:
+    from datamold.cli import main
+
+    assert main(["functions"]) == 0
+    assert "trim()" in capsys.readouterr().out
+
+
+def test_version_flag_exits_cleanly(capsys) -> None:
+    import pytest
+
+    from datamold.cli import main
+
+    with pytest.raises(SystemExit) as exc:
+        main(["--version"])
+    assert exc.value.code == 0
